@@ -11,12 +11,16 @@ int main(int argc, char * argv[]){
 	scanf("%d %d", &D, &M);
 
 	DIR *dir;
-	FILE *input;
-	char *dir_name = malloc(256);
+	FILE *input, *output;
 	char *line;
 	char *word, *next_word;
 
-	char eof = '0';
+	char eof;
+
+	char *dir_name = malloc(256);
+	strcpy(dir_name, argv[2]);
+	strcat(dir_name, "index");
+	output = fopen(dir_name, "w+");
 
 	struct dirent *ent;
 	if ((dir = opendir (argv[1])) != NULL) {
@@ -40,6 +44,8 @@ int main(int argc, char * argv[]){
 							// verify if the next word is null, then back it
 							fseek(input, -strlen(word)-1, SEEK_CUR);
 						} else {
+							fwrite(word, strlen(word), 1, output);
+							fwrite("\n", sizeof(char), 1, output);
 							printf("%s-", word);
 						}
 						word = next_word;
