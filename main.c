@@ -1,66 +1,58 @@
-
-#include <stdio.h>
-#include <dirent.h>
 #include <string.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 int main(int argc, char * argv[]){
 
-	int D, M;
-
-	scanf("%d %d", &D, &M);
-
-	DIR *dir;
-	FILE *input, *output;
+	FILE *input = NULL, *output = NULL;
 	char *line;
 	char *word, *next_word;
 
 	char eof;
 
+	long int memory_size = strtol(argv[2], &word, 10);
+	
 	char *dir_name = malloc(256);
-	strcpy(dir_name, argv[2]);
+	strcpy(dir_name, argv[4]);
 	strcat(dir_name, "index");
 	output = fopen(dir_name, "w+");
 
-	struct dirent *ent;
-	if ((dir = opendir (argv[1])) != NULL) {
-		while ((ent = readdir (dir)) != NULL) {
-			if (!strcmp (ent->d_name, ".") || !strcmp (ent->d_name, "..")) continue;
+	line = malloc( (size_t) (memory_size+1) );
+	int files_counter;
 
-			strcpy(dir_name, argv[1]);
-			strcat(dir_name, ent->d_name);
+	char file_counter_string[5];
+	for (files_counter = 1; files_counter <= (strtol(argv[1], &word, 10)); files_counter++) {
 
-			input = fopen(dir_name, "r");
-			if(input != NULL) {
-				line = malloc( (size_t) M+1 );
-				memset(line, '\0', (size_t)M+1); // clear memory
+		strcpy(dir_name, argv[3]);
+		sprintf(file_counter_string, "%d", files_counter);
+		strcat(dir_name, file_counter_string);
+		input = fopen(dir_name, "r");
 
-				while( fread(line, 1, (size_t) M, input) ) {
-					eof = (char) (strlen(line) == M ? '0' : '1');
-					word = strtok (line, " \n"); //  no memory is allocated, we're good at this point
-					while (word != NULL ) {
-						next_word = strtok (NULL, " \n");
-						if(next_word == NULL && eof == '0'){
-							// verify if the next word is null, then back it
-							fseek(input, -strlen(word)-1, SEEK_CUR);
-						} else {
-							fwrite(word, strlen(word), 1, output);
-							fwrite("\n", sizeof(char), 1, output);
-							printf("%s-", word);
-						}
-						word = next_word;
+		if(input != NULL) {
+			while( fread(line, 1, (size_t) memory_size, input) ) {
+				eof = (char) (strlen(line) == ((size_t)memory_size) ? '0' : '1');
+				word = strtok (line, " \n"); //  no memory is allocated, we're good at this point
+				while (word != NULL ) {
+					next_word = strtok (NULL, " \n");
+					if(next_word == NULL && eof == '0'){
+						// verify if the next word is null, then back it
+						fseek(input, -strlen(word)-1, SEEK_CUR);
+					} else {
+						fwrite(word, strlen(word), 1, output);
+						fwrite("\n", sizeof(char), 1, output);
 					}
-					printf("///");
-					memset(line, '\0', (size_t)M+1); // clear memory
+					word = next_word;
 				}
-				free(line);
+				memset(line, '\0', (size_t)(memory_size+1)); // clear memory
 			}
 		}
-		closedir (dir);
-	} else {
-		perror ("");
 	}
+	memset(line, '\0', (size_t)(memory_size+1)); // clear memory to avoid errors
 
+	if(input != NULL) fclose(input);
+	if(output != NULL) fclose(output);
+
+	free(line);
 	free(dir_name);
 	return 0;
 }
