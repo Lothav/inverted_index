@@ -2,9 +2,13 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-#define FILE_BEFORE_SORT ".fbs"
 #define MAX_WORD_SIZE 21
 
+int words_cmp(const void *a, const void *b) {
+	const char **ia = (const char **)a;
+	const char **ib = (const char **)b;
+	return strcmp(*ia, *ib);
+}
 
 int main(int argc, char * argv[]){
 
@@ -13,7 +17,7 @@ int main(int argc, char * argv[]){
 
 	long int memory_size = strtol(argv[2], NULL, 10);
 	
-	char *dir_name = malloc(256);
+	char *dir_name = malloc(32);
 
 	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
 	int i, word_count;
@@ -24,6 +28,10 @@ int main(int argc, char * argv[]){
 	int files_counter;
 
 	char file_name_counter_string[10];
+	word_count = 0;
+
+	int ordered_files_count = 0;
+
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
 		strcpy(dir_name, argv[3]);
@@ -32,9 +40,7 @@ int main(int argc, char * argv[]){
 		input = fopen(dir_name, "r");
 
 		if(input != NULL) {
-			word_count = 0;
 			while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
-
 				for( i = 1; i < MAX_WORD_SIZE; i++){
 					if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
 						fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
@@ -42,28 +48,30 @@ int main(int argc, char * argv[]){
 						break;
 					}
 				}
-				printf("%d %s / ", word_count, words[word_count]);
-				if( word_count < (words_size-1) ){
+				if( (word_count+1) != (words_size) ){
 					word_count++;
 				} else {
 					word_count = 0;
-					for(i = 0; i < words_size; i++)
-						memset(words[i], '\0', (size_t)MAX_WORD_SIZE); // clear memory to avoid errors
+
+					qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
+
+					ordered_files_count++;
+
+					strcpy(dir_name, "./tmp/o");
+					sprintf(file_name_counter_string, "%d", ordered_files_count);
+					strcat(dir_name, file_name_counter_string);
+					output = fopen(dir_name, "w+");
+
+					for(i = 0; i < words_size; i++){
+						fwrite(words[i], strlen(words[i]), 1, output);
+						fwrite("\n", 1, 1, output);
+						memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+					}
+					fclose(output);
 				}
 			}
 		}
-		printf("\n");
-		for(i = 0; i < words_size; i++)
-			memset(words[i], '\0', (size_t)MAX_WORD_SIZE); // clear memory to avoid errors
 		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
-	}
-
-	word_count = 0;
-
-
-	while(word_count < words_size){
-		printf("%s ", words[word_count]);
-		word_count++;
 	}
 
 	fclose(input);
