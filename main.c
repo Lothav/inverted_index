@@ -4,6 +4,11 @@
 
 #define FILE_BEFORE_SORT ".fbs"
 
+void sortString(){
+
+}
+
+
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
@@ -17,23 +22,28 @@ int main(int argc, char * argv[]){
 	char *dir_name = malloc(256);
 	strcpy(dir_name, argv[4]);
 	strcat(dir_name, FILE_BEFORE_SORT);
-	output = fopen(dir_name, "w+");
+	//output = fopen(dir_name, "w+");
 
 	line = malloc( (size_t) (memory_size+1) );
-	int files_counter;
+	int files_counter, files_tmp_counter = 0;
 
-	char file_input_name_counter_string[10]; // MAX number of inputs with 10 digits
+	char file_name_counter_string[10]; // MAX number of inputs with 10 digits
 	for (files_counter = 1; files_counter <= (strtol(argv[1], &word, 10)); files_counter++) {
 
 		strcpy(dir_name, argv[3]);
-		sprintf(file_input_name_counter_string, "%d", files_counter);
-		strcat(dir_name, file_input_name_counter_string);
+		sprintf(file_name_counter_string, "%d", files_counter);
+		strcat(dir_name, file_name_counter_string);
 		input = fopen(dir_name, "r");
 
 		if(input != NULL) {
 			while( fread(line, 1, (size_t) memory_size, input) ) {
 				eof = (char) (strlen(line) == ((size_t)memory_size) ? '0' : '1');
 				word = strtok (line, " \n"); //  no memory is allocated, we're good at this point
+				files_tmp_counter++;
+				strcpy(dir_name, "./tmp/");
+				sprintf(file_name_counter_string, "%d", files_tmp_counter);
+				strcat(dir_name, file_name_counter_string);
+				output = fopen(dir_name, "w+");
 				while (word != NULL && word != "" ) {
 					next_word = strtok (NULL, " \n");
 					if(next_word == NULL && eof == '0'){
@@ -45,14 +55,18 @@ int main(int argc, char * argv[]){
 					}
 					word = next_word;
 				}
+
+				fclose(output);
 				memset(line, '\0', (size_t)(memory_size+1)); // clear memory
 			}
 		}
+		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
 	}
 	memset(line, '\0', (size_t)(memory_size+1)); // clear memory to avoid errors
+	memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
+
 
 	if(input != NULL) fclose(input);
-	if(output != NULL) fclose(output);
 
 	free(line);
 	free(dir_name);
