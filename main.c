@@ -7,13 +7,18 @@
 int words_cmp(const void *a, const void *b) {
 	const char **ia = (const char **)a;
 	const char **ib = (const char **)b;
-	return strcmp(*ia, *ib);
+	if(strlen(*ia) && strlen(*ib)){
+		return strcmp(*ia, *ib);
+	}else{
+		return 0;
+	}
 }
 
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
-	int i, word_count = 0, files_counter, ordered_files_count = 0;;
+	int i, word_count = 0, files_counter, ordered_files_count = 0;
+	size_t line_len = 0;
 
 	long int memory_size = strtol(argv[2], NULL, 10);
 	long words_size;
@@ -25,49 +30,73 @@ int main(int argc, char * argv[]){
 	char dir_name[32], file_name_counter_string[10];
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
-
 		strcpy(dir_name, argv[3]);
 		sprintf(file_name_counter_string, "%d", files_counter);
 		strcat(dir_name, file_name_counter_string);
 		input = fopen(dir_name, "r");
-
-		if(input != NULL) {
-			while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
-				for( i = 1; i < MAX_WORD_SIZE; i++){
-					if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
-						fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
-						words[word_count][i] = '\0';
-						break;
-					}
-				}
-				if( (word_count+1) != (words_size) ){
-					word_count++;
-				} else {
-					word_count = 0;
-
-					qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
-
-					ordered_files_count++;
-
-					strcpy(dir_name, "./tmp/o");
-					sprintf(file_name_counter_string, "%d", ordered_files_count);
-					strcat(dir_name, file_name_counter_string);
-					output = fopen(dir_name, "w+");
-
-					for(i = 0; i < words_size; i++){
-						fwrite(words[i], strlen(words[i]), 1, output);
-						fwrite("\n", 1, 1, output);
-						memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
-					}
-					fclose(output);
+		while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
+			for( i = 1; i < MAX_WORD_SIZE; i++){
+				if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
+					fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
+					words[word_count][i] = '\0';
+					break;
 				}
 			}
+			if( (word_count+1) != (words_size) ){
+				word_count++;
+			} else {
+				word_count = 0;
+
+				qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
+
+				ordered_files_count++;
+
+				strcpy(dir_name, "./tmp/o");
+				sprintf(file_name_counter_string, "%d", ordered_files_count);
+				strcat(dir_name, file_name_counter_string);
+				output = fopen(dir_name, "w+");
+
+				for(i = 0; i < words_size; i++){
+					fwrite(words[i], strlen(words[i]), 1, output);
+					fwrite("\n", 1, 1, output);
+					memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+				}
+				fclose(output);
+			}
 		}
-		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
+
+		if(word_count && files_counter == (strtol(argv[1], NULL, 10))){
+			qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
+
+			ordered_files_count++;
+
+			strcpy(dir_name, "./tmp/o");
+			sprintf(file_name_counter_string, "%d", ordered_files_count);
+			strcat(dir_name, file_name_counter_string);
+			output = fopen(dir_name, "w+");
+
+			for(i = 0; i < word_count; i++){
+				fwrite(words[i], strlen(words[i]), 1, output);
+				fwrite("\n", 1, 1, output);
+				memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+			}
+			fclose(output);
+		}
+
+		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1));
+		fclose(input);
+	}
+	for(i = 0; i < words_size; i++) memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+
+	for(i = 0; i < ordered_files_count; i++) {
+		strcpy(dir_name, "./tmp/o");
+		sprintf(file_name_counter_string, "%d", i+1);
+		strcat(dir_name, file_name_counter_string);
+		input = fopen(dir_name, "r");
+		getline(&words[i], &line_len, input);
+		fclose(input);
 	}
 
-	fclose(input);
-	memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
 
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
