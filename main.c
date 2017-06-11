@@ -17,7 +17,8 @@ int words_cmp(const void *a, const void *b) {
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
-	int i, word_count = 0, files_counter, ordered_files_count = 0;
+	int i, word_count = 0, files_counter, ordered_files_count = 0, lowest_index = 0;
+
 	size_t line_len = 0;
 
 	long int memory_size = strtol(argv[2], NULL, 10);
@@ -88,16 +89,39 @@ int main(int argc, char * argv[]){
 	}
 	for(i = 0; i < words_size; i++) memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
 
+	FILE *files[ordered_files_count];
 	for(i = 0; i < ordered_files_count; i++) {
 		strcpy(dir_name, "./tmp/o");
 		sprintf(file_name_counter_string, "%d", i+1);
 		strcat(dir_name, file_name_counter_string);
-		input = fopen(dir_name, "r");
-		getline(&words[i], &line_len, input);
-		fclose(input);
+		files[i] = fopen(dir_name, "r");
+		getline(&words[i], &line_len, files[i]);
 	}
 
+	output = fopen("./tmp/a", "w+");
 
+
+	__ssize_t success;
+
+
+	while(1){
+		lowest_index = -1;
+		for(i = 0; i < words_size; i++) {
+			if(words[i] == NULL || !strlen(words[i])) continue;
+			lowest_index = strcmp(words[i], words[lowest_index == -1 ? i : lowest_index]) > 0 ? lowest_index : i;
+		}
+		if(lowest_index == -1){
+			break;
+		}
+		fwrite(words[lowest_index], strlen(words[lowest_index]), 1, output);
+		success = getline(&words[lowest_index], &line_len, files[lowest_index]);
+		if(success == -1){
+			words[lowest_index] = NULL;
+		}
+	}
+
+	fclose(output);
+	for(i = 0; i < ordered_files_count; i++) fclose(files[i]);
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
 
