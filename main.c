@@ -3,32 +3,28 @@
 #include <stdlib.h>
 
 #define FILE_BEFORE_SORT ".fbs"
-
-void sortString(){
-
-}
+#define MAX_WORD_SIZE 21
 
 
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
-	char *line;
-	char *word, *next_word;
+	long words_size;
 
-	char eof;
-
-	long int memory_size = strtol(argv[2], &word, 10);
+	long int memory_size = strtol(argv[2], NULL, 10);
 	
 	char *dir_name = malloc(256);
-	strcpy(dir_name, argv[4]);
-	strcat(dir_name, FILE_BEFORE_SORT);
-	//output = fopen(dir_name, "w+");
 
-	line = malloc( (size_t) (memory_size+1) );
-	int files_counter, files_tmp_counter = 0;
+	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
+	int i, word_count;
 
-	char file_name_counter_string[10]; // MAX number of inputs with 10 digits
-	for (files_counter = 1; files_counter <= (strtol(argv[1], &word, 10)); files_counter++) {
+	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
+	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+
+	int files_counter;
+
+	char file_name_counter_string[10];
+	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
 		strcpy(dir_name, argv[3]);
 		sprintf(file_name_counter_string, "%d", files_counter);
@@ -36,8 +32,55 @@ int main(int argc, char * argv[]){
 		input = fopen(dir_name, "r");
 
 		if(input != NULL) {
-			while( fread(line, 1, (size_t) memory_size, input) ) {
-				eof = (char) (strlen(line) == ((size_t)memory_size) ? '0' : '1');
+			word_count = 0;
+			while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
+
+				for( i = 1; i < MAX_WORD_SIZE; i++){
+					if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
+						fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
+						words[word_count][i] = '\0';
+						break;
+					}
+				}
+				printf("%d %s / ", word_count, words[word_count]);
+				if( word_count < (words_size-1) ){
+					word_count++;
+				} else {
+					word_count = 0;
+					for(i = 0; i < words_size; i++)
+						memset(words[i], '\0', (size_t)MAX_WORD_SIZE); // clear memory to avoid errors
+				}
+			}
+		}
+		printf("\n");
+		for(i = 0; i < words_size; i++)
+			memset(words[i], '\0', (size_t)MAX_WORD_SIZE); // clear memory to avoid errors
+		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
+	}
+
+	word_count = 0;
+
+
+	while(word_count < words_size){
+		printf("%s ", words[word_count]);
+		word_count++;
+	}
+
+	fclose(input);
+	memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
+
+	for(i = 0; i < words_size; i++) free(words[i]);
+	free(words);
+
+	free(dir_name);
+	return 0;
+}
+
+/*
+ *
+
+
+
 				word = strtok (line, " \n"); //  no memory is allocated, we're good at this point
 				files_tmp_counter++;
 				strcpy(dir_name, "./tmp/");
@@ -55,20 +98,4 @@ int main(int argc, char * argv[]){
 					}
 					word = next_word;
 				}
-
-				fclose(output);
-				memset(line, '\0', (size_t)(memory_size+1)); // clear memory
-			}
-		}
-		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
-	}
-	memset(line, '\0', (size_t)(memory_size+1)); // clear memory to avoid errors
-	memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1)); // clear memory to avoid errors
-
-
-	if(input != NULL) fclose(input);
-
-	free(line);
-	free(dir_name);
-	return 0;
-}
+*/
