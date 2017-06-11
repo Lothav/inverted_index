@@ -13,24 +13,16 @@ int words_cmp(const void *a, const void *b) {
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
-	long words_size;
+	int i, word_count = 0, files_counter, ordered_files_count = 0;;
 
 	long int memory_size = strtol(argv[2], NULL, 10);
-	
-	char *dir_name = malloc(32);
-
+	long words_size;
 	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
-	int i, word_count;
 
 	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
 	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
 
-	int files_counter;
-
-	char file_name_counter_string[10];
-	word_count = 0;
-
-	int ordered_files_count = 0;
+	char dir_name[32], file_name_counter_string[10];
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
@@ -80,30 +72,5 @@ int main(int argc, char * argv[]){
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
 
-	free(dir_name);
 	return 0;
 }
-
-/*
- *
-
-
-
-				word = strtok (line, " \n"); //  no memory is allocated, we're good at this point
-				files_tmp_counter++;
-				strcpy(dir_name, "./tmp/");
-				sprintf(file_name_counter_string, "%d", files_tmp_counter);
-				strcat(dir_name, file_name_counter_string);
-				output = fopen(dir_name, "w+");
-				while (word != NULL && word != "" ) {
-					next_word = strtok (NULL, " \n");
-					if(next_word == NULL && eof == '0'){
-						// verify if the next word is null, then back it
-						fseek(input, -strlen(word)-1, SEEK_CUR);
-					} else {
-						fwrite(word, strlen(word), 1, output);
-						fwrite("\n", 1, 1, output);
-					}
-					word = next_word;
-				}
-*/
