@@ -91,24 +91,24 @@ int main(int argc, char * argv[]){
 	for(i = 0; i < words_size; i++) words[i] = NULL;
 
 	FILE *files[words_size];
-	i = 0;
+	int file_index = 0;
 	int iterations = 1;
 	long loop = words_size;
 	char file_suffix = 'b';
 	char tmp_file_suffix;
 	while(1){
-		for( ; i < loop; i++) {
+		for( ; file_index < loop; file_index++) {
 			strcpy(dir_name, "./tmp/");
 			tmp_file_suffix = file_suffix-1;
 			strncat(dir_name, &tmp_file_suffix, 1);
-			sprintf(file_name_counter_string, "%d", i+1);
+			sprintf(file_name_counter_string, "%d", file_index+1);
 			strcat(dir_name, file_name_counter_string);
-			files[i% words_size] = fopen(dir_name, "r");
-			if(files[i% words_size] == NULL){
+			files[file_index% words_size] = fopen(dir_name, "r");
+			if(files[file_index% words_size] == NULL){
 				loop = -1;
 				break;
 			}
-			getline(&words[i % words_size], &line_len, files[i% words_size]);
+			getline(&words[file_index % words_size], &line_len, files[file_index% words_size]);
 
 		}
 
@@ -150,7 +150,7 @@ int main(int argc, char * argv[]){
 		if(loop != -1){
 			loop += words_size;
 		} else {
-			i = 0;
+			file_index = 0;
 			loop = words_size;
 			file_suffix++;
 			iterations = 1;
