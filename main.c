@@ -97,14 +97,14 @@ int main(int argc, char * argv[]){
 	char file_suffix = 'b';
 	char tmp_file_suffix;
 	while(1){
-		for( ; file_index <= loop; file_index++) {
+		for( ; file_index < loop; file_index++) {
 			strcpy(dir_name, "./tmp/");
 			tmp_file_suffix = file_suffix-1;
 			strncat(dir_name, &tmp_file_suffix, 1);
 			sprintf(file_name_counter_string, "%d", file_index+1);
 			strcat(dir_name, file_name_counter_string);
-			files[file_index% words_size] = fopen(dir_name, "r");
-			if(files[file_index% words_size] == NULL){
+			files[file_index % words_size] = fopen(dir_name, "r");
+			if(files[file_index % words_size] == NULL){
 				loop = -1;
 				break;
 			}
