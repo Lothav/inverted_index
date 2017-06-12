@@ -96,6 +96,9 @@ int main(int argc, char * argv[]){
 	long loop = words_size;
 	char file_suffix = 'b';
 	char tmp_file_suffix;
+
+	int break_loop = 0;
+
 	while(1){
 		for( ; file_index < loop; file_index++) {
 			strcpy(dir_name, "./tmp/");
@@ -105,8 +108,16 @@ int main(int argc, char * argv[]){
 			strcat(dir_name, file_name_counter_string);
 			files[file_index % words_size] = fopen(dir_name, "r");
 			if(files[file_index % words_size] == NULL){
-				loop = -1;
-				break;
+				if((file_index % words_size) == 0){
+					file_index = -1;
+					loop = words_size;
+					file_suffix++;
+					iterations = 1;
+					continue;
+				} else {
+					loop = -1;
+					break;
+				}
 			}
 			if(file_index < loop)
 				getline(&words[file_index % words_size], &line_len, files[file_index% words_size]);
