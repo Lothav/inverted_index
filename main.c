@@ -1,6 +1,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define MAX_WORD_SIZE 21
 
@@ -52,7 +53,7 @@ int main(int argc, char * argv[]){
 
 				ordered_files_count++;
 
-				strcpy(dir_name, "./tmp/o");
+				strcpy(dir_name, "./tmp/a");
 				sprintf(file_name_counter_string, "%d", ordered_files_count);
 				strcat(dir_name, file_name_counter_string);
 				output = fopen(dir_name, "w+");
@@ -71,7 +72,7 @@ int main(int argc, char * argv[]){
 
 			ordered_files_count++;
 
-			strcpy(dir_name, "./tmp/o");
+			strcpy(dir_name, "./tmp/a");
 			sprintf(file_name_counter_string, "%d", ordered_files_count);
 			strcat(dir_name, file_name_counter_string);
 			output = fopen(dir_name, "w+");
@@ -91,11 +92,15 @@ int main(int argc, char * argv[]){
 
 	FILE *files[words_size];
 	i = 0;
-	int iterations = 0;
+	int iterations = 1;
 	long loop = words_size;
-	while(loop != -1){
+	char file_suffix = 'b';
+	char tmp_file_suffix;
+	while(1){
 		for( ; i < loop; i++) {
-			strcpy(dir_name, "./tmp/o");
+			strcpy(dir_name, "./tmp/");
+			tmp_file_suffix = file_suffix-1;
+			strncat(dir_name, &tmp_file_suffix, 1);
 			sprintf(file_name_counter_string, "%d", i+1);
 			strcat(dir_name, file_name_counter_string);
 			files[i% words_size] = fopen(dir_name, "r");
@@ -104,9 +109,16 @@ int main(int argc, char * argv[]){
 				break;
 			}
 			getline(&words[i % words_size], &line_len, files[i% words_size]);
+
 		}
 
-		strcpy(dir_name, "./tmp/a");
+		if(files[1] == NULL){
+			break;
+		}
+
+		memset(dir_name, '\0', strlen(dir_name));
+		strcpy(dir_name, "./tmp/");
+		strncat(dir_name, &file_suffix, 1);
 		sprintf(file_name_counter_string, "%d", iterations++);
 		strcat(dir_name, file_name_counter_string);
 
@@ -137,6 +149,11 @@ int main(int argc, char * argv[]){
 			}
 		if(loop != -1){
 			loop += words_size;
+		} else {
+			i = 0;
+			loop = words_size;
+			file_suffix++;
+			iterations = 1;
 		}
 	}
 
