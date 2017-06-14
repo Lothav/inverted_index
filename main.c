@@ -31,12 +31,58 @@ int main(int argc, char * argv[]){
 
 	char dir_name[32], file_name_counter_string[10];
 
+    char word_comp_suff[33];
+
+    int word_file_index, word_pos = 0, word_amount = 0;
+
+    for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
+
+		strcpy(dir_name, argv[3]);
+		sprintf(file_name_counter_string, "%d", files_counter);
+		strcat(dir_name, file_name_counter_string);
+
+		input = fopen(dir_name, "r");
+
+		fseek(input, (word_pos == 0 ? 0 : word_pos - 1), SEEK_SET);
+        fread(word_comp_suff, 1, (size_t) (MAX_WORD_SIZE), input);
+		for (i = 1; i < MAX_WORD_SIZE; i++)
+			if (word_comp_suff[i] == '\n' || word_comp_suff[i] == ' ') {
+				word_comp_suff[i] = '\0';
+				break;
+			}
+		fseek(input, 0, SEEK_SET);
+
+        while (fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
+            for (i = 1; i < MAX_WORD_SIZE; i++) {
+                if (words[word_count][i] == '\n' || words[word_count][i] == ' ') {
+                    fseek(input, -(strlen(words[word_count]) - i - 1), SEEK_CUR);
+                    words[word_count][i] = '\0';
+                    break;
+                }
+            }
+            if ((word_count + 1) != (words_size)) {
+                word_count++;
+            } else {
+                word_count = 0;
+                for(i = 0; i < words_size; i++){
+                    word_amount += strcmp(words[i], word_comp_suff) == 0;
+					memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+                }
+            }
+        }
+		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1));
+		fclose(input);
+    }
+
+
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 		strcpy(dir_name, argv[3]);
 		sprintf(file_name_counter_string, "%d", files_counter);
 		strcat(dir_name, file_name_counter_string);
-		input = fopen(dir_name, "r");
-		while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
+
+        input = fopen(dir_name, "r");
+
+        while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
 			for( i = 1; i < MAX_WORD_SIZE; i++){
 				if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
 					fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
@@ -96,8 +142,6 @@ int main(int argc, char * argv[]){
 	long loop = words_size;
 	char file_suffix = 'b';
 	char tmp_file_suffix;
-
-	int break_loop = 0;
 
 	while(1){
 		for( ; file_index < loop; file_index++) {
