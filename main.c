@@ -190,27 +190,17 @@ void generateFilesBlocksOrdered(char **words, long words_size){
 	fclose(input);
 }
 
-int main(int argc, char * argv[]){
 
-	FILE  *output = NULL;
-	int i, j, lowest_index = 0;
+void balancedInterleaving(char** words, long words_size){
+
+	FILE *output;
 
 	size_t line_len = 0;
 
-	long int memory_size = strtol(argv[2], NULL, 10);
-	long words_size;
-	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
+	char *dir_name 		 = malloc(15),
+			*file_name_aux  = malloc(15);
 
-	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
-	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
-
-	char dir_name[32], *file_name_aux = malloc(10);
-
-	char *word_comp_suff = malloc(MAX_WORD_SIZE);
-
-	generateSuffixedFile(words, argv, words_size);
-
-	generateFilesBlocksOrdered(words, words_size);
+	int i, j, lowest_index = 0;
 
 	for(i = 0; i < words_size; i++) words[i] = NULL;
 
@@ -309,10 +299,25 @@ int main(int argc, char * argv[]){
 
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
-	free(word_comp_suff);
 	free(file_name_aux);
 	free(aux_a);
 	free(aux_b);
+}
+
+int main(int argc, char * argv[]){
+
+	int i;
+
+	long int memory_size = strtol(argv[2], NULL, 10);
+	long words_size;
+	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
+
+	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
+	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+
+	generateSuffixedFile(words, argv, words_size);
+	generateFilesBlocksOrdered(words, words_size);
+	balancedInterleaving(words, words_size);
 
 	return 0;
 }
