@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define MAX_WORD_SIZE 21
+#define MAX_WORD_SIZE 33
 
 int words_cmp(const void *a, const void *b) {
 	const char **ia = (const char **)a;
@@ -31,11 +31,11 @@ int main(int argc, char * argv[]){
 
 	char dir_name[32], *file_name_aux = malloc(10);
 
-	char *word_comp_suff = malloc(sizeof(33));
+	char *word_comp_suff = malloc(MAX_WORD_SIZE);
 
 	int word_pos = 0, word_amount = 0;
 
-	output = fopen("./tmp/asd", "a+");
+	output = fopen("./tmp/asd", "w+");
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
@@ -45,7 +45,7 @@ int main(int argc, char * argv[]){
 
 		input = fopen(dir_name, "r");
 
-		memset(word_comp_suff, '\0', (size_t) strlen(word_comp_suff)+1);
+		memset(word_comp_suff, '\0', (size_t) strlen(word_comp_suff));
 		while(fread(word_comp_suff, 1, (size_t) (MAX_WORD_SIZE), input)){
 
 			for (i = 1; i < MAX_WORD_SIZE; i++)
@@ -75,22 +75,22 @@ int main(int argc, char * argv[]){
 				}
 			}
 
-			fwrite(word_comp_suff, 1, sizeof(word_comp_suff), output);
+			fwrite(word_comp_suff, 1, strlen(word_comp_suff), output);
 			fwrite(",", 1, 1, output);
 
 			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 			sprintf(file_name_aux, "%d", files_counter);
-			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+			fwrite(file_name_aux, 1, strlen(file_name_aux), output);
 			fwrite(",", 1, 1, output);
 
 			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 			sprintf(file_name_aux, "%d", word_amount);
-			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+			fwrite(file_name_aux, 1, strlen(file_name_aux), output);
 			fwrite(",", 1, 1, output);
 
 			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 			sprintf(file_name_aux, "%d", word_pos);
-			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+			fwrite(file_name_aux, 1, strlen(file_name_aux), output);
 
 			fwrite("\n", 1, 1, output);
 
@@ -108,45 +108,25 @@ int main(int argc, char * argv[]){
 
 	fclose(output);
 
-	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
-		strcpy(dir_name, argv[3]);
-		sprintf(file_name_aux, "%d", files_counter);
-		strcat(dir_name, file_name_aux);
+	input = fopen("./tmp/asd", "r");
 
-		input = fopen(dir_name, "r");
+	for(i = 0; i < words_size; i++) words[i][0] = '\0';
+	word_count = 0;
 
-		while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
-			for( i = 1; i < MAX_WORD_SIZE; i++){
-				if(words[word_count][i] == '\n' || words[word_count][i] == ' '){
-					fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
+	while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
+		for( i = 1; i < MAX_WORD_SIZE; i++){
+			if(words[word_count][i] == '\n'){
+				fseek(input, -(strlen(words[word_count])-i-1), SEEK_CUR);
+				for( ; i < MAX_WORD_SIZE; i++)
 					words[word_count][i] = '\0';
-					break;
-				}
-			}
-			if( (word_count+1) != (words_size) ){
-				word_count++;
-			} else {
-				word_count = 0;
-
-				qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
-
-				ordered_files_count++;
-
-				strcpy(dir_name, "./tmp/a");
-				sprintf(file_name_aux, "%d", ordered_files_count);
-				strcat(dir_name, file_name_aux);
-				output = fopen(dir_name, "w+");
-
-				for(i = 0; i < words_size; i++){
-					fwrite(words[i], strlen(words[i]), 1, output);
-					fwrite("\n", 1, 1, output);
-					memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
-				}
-				fclose(output);
+				break;
 			}
 		}
+		if( (word_count+1) != (words_size) ){
+			word_count++;
+		} else {
+			word_count = 0;
 
-		if(word_count && files_counter == (strtol(argv[1], NULL, 10))){
 			qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
 
 			ordered_files_count++;
@@ -156,17 +136,36 @@ int main(int argc, char * argv[]){
 			strcat(dir_name, file_name_aux);
 			output = fopen(dir_name, "w+");
 
-			for(i = 0; i < word_count; i++){
+			for(i = 0; i < words_size; i++){
 				fwrite(words[i], strlen(words[i]), 1, output);
 				fwrite("\n", 1, 1, output);
 				memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
 			}
 			fclose(output);
 		}
-
-		memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)+1));
-		fclose(input);
 	}
+
+	if(word_count && files_counter == (strtol(argv[1], NULL, 10))){
+		qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
+
+		ordered_files_count++;
+
+		strcpy(dir_name, "./tmp/a");
+		sprintf(file_name_aux, "%d", ordered_files_count);
+		strcat(dir_name, file_name_aux);
+		output = fopen(dir_name, "w+");
+
+		for(i = 0; i < word_count; i++){
+			fwrite(words[i], strlen(words[i]), 1, output);
+			fwrite("\n", 1, 1, output);
+			memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+		}
+		fclose(output);
+	}
+
+	memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
+	fclose(input);
+
 	for(i = 0; i < words_size; i++) words[i] = NULL;
 
 	FILE *files[words_size];
@@ -200,7 +199,7 @@ int main(int argc, char * argv[]){
 				getline(&words[file_index % words_size], &line_len, files[file_index% words_size]);
 		}
 
-		if(files[1] == NULL){
+		if(files[1] == NULL && iterations == 1){
 			break;
 		}
 
