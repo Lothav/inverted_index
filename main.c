@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <string.h>
 #include <malloc.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@
 int words_cmp(const void *a, const void *b) {
 	char *ia = malloc(MAX_WORD_SIZE);
 	char *ib = malloc(MAX_WORD_SIZE);
-	int i;
+	unsigned int i;
 
 	memcpy(ia, *(char **)a, strlen(*(char **)a));
 	memcpy(ib, *(char **)b, strlen(*(char **)b));
@@ -148,6 +149,7 @@ void writeOnFile(char ** words, long words_size, int *ordered_files_count, int w
 		memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
 	}
 	fclose(output);
+
 	free(dir_name);
 	free(file_name_aux);
 }
@@ -186,7 +188,6 @@ void generateFilesBlocksOrdered(char **words, long words_size){
 	free(file_name_aux);
 	free(dir_name);
 
-	memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 	fclose(input);
 }
 
@@ -198,9 +199,10 @@ void balancedInterleaving(char** words, long words_size){
 	size_t line_len = 0;
 
 	char *dir_name 		 = malloc(15),
-			*file_name_aux  = malloc(15);
+		 *file_name_aux  = malloc(15);
 
-	int i, j, lowest_index = 0;
+	unsigned int i, j;
+	int lowest_index = 0;
 
 	for(i = 0; i < words_size; i++) words[i] = NULL;
 
@@ -257,7 +259,7 @@ void balancedInterleaving(char** words, long words_size){
 				if(words[i] == NULL || !strlen(words[i])) continue;
 
 				memcpy(aux_a, words[i], strlen(words[i]));
-				memcpy(aux_b, words[lowest_index == -1 ? i : lowest_index], strlen(words[lowest_index == -1 ? i : lowest_index]));
+				memcpy(aux_b, words[lowest_index == -1 ? i : (unsigned)lowest_index], strlen(words[lowest_index == -1 ? i : (unsigned)lowest_index]));
 
 				for(j = 0; j < strlen(aux_a); j++)
 					if((aux_a)[j] == ',')
@@ -266,7 +268,7 @@ void balancedInterleaving(char** words, long words_size){
 					if((aux_b)[j] == ',')
 						(aux_b)[j] = '\0';
 
-				lowest_index = strcmp(aux_a, aux_b) >= 0 && lowest_index != -1? lowest_index : i;
+				lowest_index = strcmp(aux_a, aux_b) >= 0 && lowest_index != -1? (unsigned)lowest_index : i;
 				memset(aux_a, '\0', strlen(aux_a));
 				memset(aux_b, '\0', strlen(aux_b));
 			}
@@ -297,27 +299,36 @@ void balancedInterleaving(char** words, long words_size){
 		}
 	}
 
-	for(i = 0; i < words_size; i++) free(words[i]);
-	free(words);
+	free(dir_name);
 	free(file_name_aux);
 	free(aux_a);
 	free(aux_b);
 }
-
 int main(int argc, char * argv[]){
+	(void)argc; // prevent get errors from non use
 
+	// Get max memory bytes from arguments.
+	long memory_size = strtol(argv[2], NULL, 10);
+	// Calc max words that we'll be able to pull to memory.
+	long words_size  = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));;
+
+	/*
+	 * Main code Array.
+	 * Will be used in every file operation respecting memory limit.
+	 * */
 	int i;
-
-	long int memory_size = strtol(argv[2], NULL, 10);
-	long words_size;
-	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
-
 	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
-	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+	for(i = 0; i < words_size; i++)
+		words[i] = (char *) calloc(1, MAX_WORD_SIZE);
 
+	// Call Main functions.
+	// Their descriptions can be found on theirs respective headers.
 	generateSuffixedFile(words, argv, words_size);
 	generateFilesBlocksOrdered(words, words_size);
 	balancedInterleaving(words, words_size);
+
+	for(i = 0; i < words_size; i++) free(words[i]);
+	free(words);
 
 	return 0;
 }
