@@ -126,9 +126,35 @@ void generateSuffixedFile(char **words, char * argv[], long words_size){
 
 }
 
+void writeOnFile(char ** words, long words_size, int *ordered_files_count, int word_count ){
+
+	FILE *output;
+	int i;
+	char *dir_name 		 = malloc(15),
+		 *file_name_aux  = malloc(15);
+
+	qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
+
+	(*ordered_files_count)++;
+
+	strcpy(dir_name, "./tmp/a");
+	sprintf(file_name_aux, "%d", *ordered_files_count);
+	strcat(dir_name, file_name_aux);
+	output = fopen(dir_name, "w+");
+
+	for(i = 0; i < word_count; i++){
+		fwrite(words[i], strlen(words[i]), 1, output);
+		fwrite("\n", 1, 1, output);
+		memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+	}
+	fclose(output);
+	free(dir_name);
+	free(file_name_aux);
+}
+
 void generateFilesBlocksOrdered(char **words, long words_size){
 
-	FILE *input, *output;
+	FILE *input;
 
 	input = fopen("./tmp/suffixed", "r");
 
@@ -151,42 +177,11 @@ void generateFilesBlocksOrdered(char **words, long words_size){
 			word_count++;
 		} else {
 			word_count = 0;
-
-			qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
-
-			ordered_files_count++;
-
-			strcpy(dir_name, "./tmp/a");
-			sprintf(file_name_aux, "%d", ordered_files_count);
-			strcat(dir_name, file_name_aux);
-			output = fopen(dir_name, "w+");
-
-			for(i = 0; i < words_size; i++){
-				fwrite(words[i], strlen(words[i]), 1, output);
-				fwrite("\n", 1, 1, output);
-				memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
-			}
-			fclose(output);
+			writeOnFile(words, words_size, &ordered_files_count, (int)words_size);
 		}
 	}
 
-	if(word_count){
-		qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
-
-		ordered_files_count++;
-
-		strcpy(dir_name, "./tmp/a");
-		sprintf(file_name_aux, "%d", ordered_files_count);
-		strcat(dir_name, file_name_aux);
-		output = fopen(dir_name, "w+");
-
-		for(i = 0; i < word_count; i++){
-			fwrite(words[i], strlen(words[i]), 1, output);
-			fwrite("\n", 1, 1, output);
-			memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
-		}
-		fclose(output);
-	}
+	if(word_count) writeOnFile(words, words_size, &ordered_files_count, word_count);
 
 	free(file_name_aux);
 	free(dir_name);
