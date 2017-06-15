@@ -8,7 +8,7 @@ void balancedInterleaving(char** words, long words_size){
 	size_t line_len = 0;
 
 	char *dir_name 		 = malloc(15),
-			*file_name_aux  = malloc(15);
+		 *file_name_aux  = malloc(15);
 
 	unsigned int i, j;
 	int lowest_index = 0;
