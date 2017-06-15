@@ -74,6 +74,12 @@ int main(int argc, char * argv[]){
 					}
 				}
 			}
+			if(strlen(words[0])){
+				for(i = 0; i < words_size; i++){
+					word_amount += strcmp(words[i], word_comp_suff) == 0;
+					memset(words[i], '\0', (size_t)MAX_WORD_SIZE);
+				}
+			}
 
 			fwrite(word_comp_suff, 1, strlen(word_comp_suff), output);
 			fwrite(",", 1, 1, output);
