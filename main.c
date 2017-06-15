@@ -35,7 +35,7 @@ int main(int argc, char * argv[]){
 
 	int word_pos = 0, word_amount = 0;
 
-	output = fopen("./tmp/asd", "w+");
+	output = fopen("./tmp/suffixed", "w+");
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
@@ -114,7 +114,7 @@ int main(int argc, char * argv[]){
 
 	fclose(output);
 
-	input = fopen("./tmp/asd", "r");
+	input = fopen("./tmp/suffixed", "r");
 
 	for(i = 0; i < words_size; i++) words[i][0] = '\0';
 	word_count = 0;
