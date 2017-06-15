@@ -126,30 +126,17 @@ void generateSuffixedFile(char **words, char * argv[], long words_size){
 
 }
 
-int main(int argc, char * argv[]){
+void generateFilesBlocksOrdered(char **words, long words_size){
 
-	FILE *input = NULL, *output = NULL;
-	int i, j, word_count = 0, ordered_files_count = 0, lowest_index = 0;
-
-	size_t line_len = 0;
-
-	long int memory_size = strtol(argv[2], NULL, 10);
-	long words_size;
-	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
-
-	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
-	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
-
-	char dir_name[32], *file_name_aux = malloc(10);
-
-	char *word_comp_suff = malloc(MAX_WORD_SIZE);
-
-	generateSuffixedFile(words, argv, words_size);
+	FILE *input, *output;
 
 	input = fopen("./tmp/suffixed", "r");
 
+	char *dir_name 		 = malloc(15),
+		 *file_name_aux  = malloc(15);
+
+	int i, word_count = 0, ordered_files_count = 0;
 	for(i = 0; i < words_size; i++) words[i][0] = '\0';
-	word_count = 0;
 
 	while(fread(words[word_count], 1, (size_t) (MAX_WORD_SIZE), input) && strlen(words[word_count])) {
 		for( i = 1; i < MAX_WORD_SIZE; i++){
@@ -201,8 +188,34 @@ int main(int argc, char * argv[]){
 		fclose(output);
 	}
 
+	free(file_name_aux);
+	free(dir_name);
+
 	memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 	fclose(input);
+}
+
+int main(int argc, char * argv[]){
+
+	FILE  *output = NULL;
+	int i, j, lowest_index = 0;
+
+	size_t line_len = 0;
+
+	long int memory_size = strtol(argv[2], NULL, 10);
+	long words_size;
+	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
+
+	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
+	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+
+	char dir_name[32], *file_name_aux = malloc(10);
+
+	char *word_comp_suff = malloc(MAX_WORD_SIZE);
+
+	generateSuffixedFile(words, argv, words_size);
+
+	generateFilesBlocksOrdered(words, words_size);
 
 	for(i = 0; i < words_size; i++) words[i] = NULL;
 
