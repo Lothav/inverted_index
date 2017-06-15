@@ -1,0 +1,215 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Índice Invertido}
+\author{Luiz Otávio Resende Vasconcelos}
+\date{Junho 2017}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\begin{document}
+
+\maketitle
+
+\section{Introdução}
+O presente trabalho visa solucionar o problema o qual descreve um aplicativo de mensagens em que é necessário uma busca por ocorrências em palavras no histórico. Para isso, devemos gerar um arquivo com índices invertidos, ordenado, contendo cada palavra e as respectivas informações sobre ela: conversa em que se encontra, número de vezes que se repete naquela conversa e sua posição na conversa respectivamente.
+\\
+Porém, o espaço na memória do celular será limitado sendo assim necessário a implementação de uma ordenação externa.
+\\
+Para isso será alocado o limite de memória em bytes para um array no começo do código, e então, apenas esse array será utilizado para realizar todos os cálculos envolvendo os arquivos.
+\\
+\\
+O presente trabalho foi desenvolvido na linguagem C.
+\\
+Para executá-lo, basta utilizar os comandos em um bash/unix:
+\\
+\$ make
+\\
+\$ ./inverted\_index
+\\
+\\
+Será utilizada a pasta \textit{./tmp} para alocar os arquivos utilizados temporariamente, por isso, é necessário que as permissões estejam liberadas.
+\\
+O projeto completo e as etapas do desenvolvimento podem ser encontrados no repositório: \\
+\href{https://github.com/Luiz0tavio/inverted\_index}
+
+\section{Implementação}
+
+Como foi informado na descrição que as palavras da conversa não ultrapassariam 20 bytes e que o conjunto (palavra,arquivo,quantidade,posição) não ultrapassaria 32 bytes, escolhemos então trabalhar com blocos de 32 bytes cada, ou seja, assumimos que toda palavra ocupará 20bytes na memória e todo conjunto, 32bytes.
+\\
+\subsection{Gerando os Sufixos}
+Sufixo se refere ao conjunto (arquivo,quantidade,posição) que se sucede logo após cada palavra no arquivo final.
+\\
+Como os sufixos são dependentes apenas da conversa em que a palavra se encontra, é mais fácil gerá-los primeiro e então, realizar a ordenação e gerar o arquivo final, pois, as palavras serão mescladas no decorrer da ordenação. Apesar de mais fácil, terá um custo extra pois, a palavra ficará mais extensa e custará mais na memória resultando em mais passadas.
+\\
+\\
+Geramos um único arquivo chamado \textit{suffixed} no diretório \textit{./temp} com todas as palavras de todas as conversas já com seus respectivos sufixos corretos, bastando então apenas ordenar o arquivo para obter o resultado esperado. Para gerarmos tal arquivo, seguimos o seguinte pseudo-código:
+
+\begin{lstlisting}
+posicao_palavra = 0;
+
+para (cada conversa)
+{
+    para (cada palavra na conversa)
+    {
+        escolha a palavra;
+        conta_palavra = 0;
+
+        para (cada palavra na conversa)
+        {
+            se (palavra escolhida == palavra)
+            {
+                conta_palavra++;
+            }
+        }
+        escreve no arquivo de saida(
+            <palavra,
+            indice do loop de conversas,
+            conta_palavra,
+            posicao_palavra\n>
+        );
+
+        posicao_palavra += strlen(palavra) + 1;
+    }
+}
+\end{lstlisting}
+
+\noindent
+Lembrando que como a memória é limitada, não é possível trazer todas as palavras de uma só vez para a memória principal. É necessário trazer apenas o limite da memória, fazer os cálculos e então sobrescrevê-las.
+\\
+\\
+Neste momento já obtemos o arquivo final com todas as palavras com seu devido sufixo, com quebra de linha as separando, porém, não ordenadas. Basta então agora utilizar um algóritmo de ordenação externa para obter-mos o resultado final. O algorítmo é descrito na próxima secção.
+
+\\
+\subsection{Algorítmo de Ordenação Externa}
+Após os arquivos com os respectivos sufixos serem devidamente gerados utilizamos o algorítmo de \textbf{Intercalação Balanceada} para realizar a ordenação.
+\\
+\\
+Cada passada do algorítmo, incrementaremos a letra que será o prefixo do nome dos nossos novos arquivos temporários. Começando em 'a', seguido por 'b' etc.
+
+
+\subsubsection{Arquivos Pré-Intercalação Balanceada}
+Para executar-mos o algorítmo de Intercalação Balanceada, devemos primeiramente gerar blocos ordenados de tal modo que possamos então intercalálos.
+\\
+\\
+Será então gerado p arquivos, ordenados, com no máximo $M/32$ registros (onde M é o tamanho da memória e p é $n/M$, onde n é o tamanho total em bytes de todas as conversas somadas), ou seja, p é o número de arquivos necessários tal que cada um armazene no máximo M bytes.
+\\
+Para gerar esses arquivos, seguimos o seguinte pseudo-código:
+
+\begin{lstlisting}
+
+indice_arquivo = 1;
+
+enquanto (arquivo suffixed != EOF)
+{
+    selecionar palavras ate M bytes;
+
+    qsort(palavras);
+
+    escreve as palavras no arquivo 'a'+indice_arquivo;
+
+    indice_arquivo++;
+}
+
+\end{lstlisting}
+
+\noindent
+Note que \textit{qsort()} functiona muito bem neste caso utilizando \textit{strcmp()} como função de comparação.
+\\
+Para cada iteração, \textit{indice\_arquivo} é incrementado. A variável \textit{indice\_arquivo} será nosso sufixo no nome do arquivo temporário da passada. Como ainda estamos gerando os primeiros arquivos, serão nomeados 'a1', 'a2, ... , 'ap'.
+
+
+\subsubsection{Intercalação Balanceada}
+Agora que temos os 'a1', 'a2, ... , 'ap' arquivos já ordenados, fazemos a intercalação balanceada entre eles e geramos o arquivo final, seguindo o pseudo-código:
+
+\begin{lstlisting}
+
+pref_file = 'a';
+
+enquanto (houver arquivos com o prefixo pref_file)
+{
+    abra p* arquivos;
+
+    enquanto (arquivos != EOF)
+    {
+        escolha a palavra de menor ordem alfabetica utilzando strcmp();
+
+        escreva a palavra no arquivo;
+
+        coloque a proxima palavra do arquivo no lugar dessa;
+    }
+}
+
+// * p e o numero maximo de palavras que cabem na memoria = M/32
+\end{lstlisting}
+
+\\
+\noindent
+Gerando por fim o arquivo final desejado.
+
+\section{Estrutura do Projeto}
+
+Apesar do código estar bem comentado, segue uma breve exposição de como o projeto está particionado.
+
+\subsection{main.c}
+Arquivo principal do projeto. Inicializa as varíaveis, faz a leitura das entradas, faz a chamada das principais funções e exibe o resultado.
+
+\subsection{operation.h / operation.c}
+Responsável por criar e realizar operações com a estrutura de dados componente de cada nó da árvore.
+
+Também é onde está a função recursiva que irá apresentar o resultado.
+
+\subsection{stringBuffer.h / stringBuffer.c}
+Responsável por executar operações com a string de entrada que é utilizada para montar a árvore.
+
+\section{Análise Assintótica}
+\subsection{Temporal}
+
+Para gerar o arquivo \textit{suffix} descrito na secção 2.1 temos um loop externo até k, onde k é o  número de conversas (primeiro parâmetro da entrada).
+\\
+Em seguida, para cada palavra do arquivo, lemos todo o arquivo para contar-mos quantas iguais estão presentes, ou seja, $p*p$, ou, $p^2$.
+\\
+Logo, para gerar o primeiro arquivo temos \textbf{$\theta$($k*p^2$)}
+\\
+\\
+Para gerarmos os arquivos com prefixo 'a', ou seja, aqueles que estão separados em blocos ordenados para a intercalação, gastamos $M/32$ iterações, onde M é o tamanho da memória.
+
+\subsection{Espacial}
+
+
+\section{Avaliação Experimental}
+
+
+\begin{figure}[h!]
+\renewcommand{\figurename}{Figura}
+\centering
+\includegraphics[scale=0.5]{execucao.png}
+\caption{Gráfico Operações / Tempo de execução}
+\label{fig:univerise}
+\end{figure}
+
+\section{Conclusão}
+
+\begin{list_type}
+\item
+A notação polonesa reversa se mostra como uma grande aliada na computação. Entre suas vantagens, podemos citar:
+\\
+
+\begin{enumerate}
+    \item Reduz o número de passos lógicos para se perfazerem operações binárias e, posto que as demais operações são ou binárias puras compostas, ou binárias compostas com unitárias ou apenas unitárias, o número total de passos lógicos necessários a um determinado cômputo será sempre menor que aquele que utiliza a sintaxe convencional (lógica algébrica direta)
+
+    \item Trabalha com pares ordenados a priori, somente definindo a lei de composição binária aplicável após a eleição e a introdução do desejado par no cenário de cálculo. Até o momento final, se poderá decidir pela troca ou pela permanência da operação original.
+
+    \item  Minimiza os erros de computação, automática ou manual assistida;
+
+    \item  Maximiza a velocidade operacional na solução de problemas.
+
+\end{enumerate}
+\\
+\\
+Apesar da abordagem com pilha ser mais eficiente, a escolha da árvore binária mostrou grande desempenho e facilidade na implementação.
+\end{list_type}
+
+\end{document}

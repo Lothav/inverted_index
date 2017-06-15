@@ -1,7 +1,6 @@
 #include <string.h>
 #include <malloc.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define MAX_WORD_SIZE 33
 
@@ -34,27 +33,16 @@ int words_cmp(const void *a, const void *b) {
 	}
 }
 
-int main(int argc, char * argv[]){
+void generateSuffixedFile(char **words, char * argv[], long words_size){
 
-	FILE *input = NULL, *output = NULL;
-	int i, j, word_count = 0, files_counter, ordered_files_count = 0, lowest_index = 0;
-
-	size_t line_len = 0;
-
-	long int memory_size = strtol(argv[2], NULL, 10);
-	long words_size;
-	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
-
-	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
-	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
-
-	char dir_name[32], *file_name_aux = malloc(10);
-
-	char *word_comp_suff = malloc(MAX_WORD_SIZE);
-
-	int word_pos = 0, word_amount = 0;
+	FILE *input, *output;
 
 	output = fopen("./tmp/suffixed", "w+");
+
+	int word_pos = 0, word_amount = 0, i, word_count = 0, files_counter;
+	char *dir_name 		 = malloc(strlen(argv[3]) + 15),
+		 *file_name_aux  = malloc(15),
+		 *word_comp_suff = malloc(MAX_WORD_SIZE);
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
@@ -132,6 +120,31 @@ int main(int argc, char * argv[]){
 	}
 
 	fclose(output);
+	free(file_name_aux);
+	free(word_comp_suff);
+	free(dir_name);
+
+}
+
+int main(int argc, char * argv[]){
+
+	FILE *input = NULL, *output = NULL;
+	int i, j, word_count = 0, ordered_files_count = 0, lowest_index = 0;
+
+	size_t line_len = 0;
+
+	long int memory_size = strtol(argv[2], NULL, 10);
+	long words_size;
+	words_size = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
+
+	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
+	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+
+	char dir_name[32], *file_name_aux = malloc(10);
+
+	char *word_comp_suff = malloc(MAX_WORD_SIZE);
+
+	generateSuffixedFile(words, argv, words_size);
 
 	input = fopen("./tmp/suffixed", "r");
 
