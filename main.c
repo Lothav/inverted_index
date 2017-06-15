@@ -6,11 +6,30 @@
 #define MAX_WORD_SIZE 33
 
 int words_cmp(const void *a, const void *b) {
-	const char **ia = (const char **)a;
-	const char **ib = (const char **)b;
-	if(strlen(*ia) && strlen(*ib)){
-		return strcmp(*ia, *ib);
-	}else{
+	char *ia = malloc(MAX_WORD_SIZE);
+	char *ib = malloc(MAX_WORD_SIZE);
+	int i;
+
+	memcpy(ia, *(char **)a, strlen(*(char **)a));
+	memcpy(ib, *(char **)b, strlen(*(char **)b));
+
+	int cmp;
+
+	if(strlen(ia) && strlen(ib)){
+		for(i = 0; i < strlen(ia); i++)
+			if((ia)[i] == ',')
+				(ia)[i] = '\0';
+		for(i = 0; i < strlen(ib); i++)
+			if((ib)[i] == ',')
+				(ib)[i] = '\0';
+
+		cmp = strcmp(ia, ib);
+		free(ia);
+		free(ib);
+		return cmp;
+	} else {
+		free(ia);
+		free(ib);
 		return 0;
 	}
 }
@@ -18,7 +37,7 @@ int words_cmp(const void *a, const void *b) {
 int main(int argc, char * argv[]){
 
 	FILE *input = NULL, *output = NULL;
-	int i, word_count = 0, files_counter, ordered_files_count = 0, lowest_index = 0;
+	int i, j, word_count = 0, files_counter, ordered_files_count = 0, lowest_index = 0;
 
 	size_t line_len = 0;
 
@@ -151,7 +170,7 @@ int main(int argc, char * argv[]){
 		}
 	}
 
-	if(word_count && files_counter == (strtol(argv[1], NULL, 10))){
+	if(word_count){
 		qsort(words, (size_t)words_size, sizeof(char *), words_cmp);
 
 		ordered_files_count++;
@@ -180,6 +199,9 @@ int main(int argc, char * argv[]){
 	long loop = words_size;
 	char file_suffix = 'b';
 	char tmp_file_suffix;
+
+	char *aux_a = malloc(MAX_WORD_SIZE);;
+	char *aux_b = malloc(MAX_WORD_SIZE);;
 
 	while(1){
 		for( ; file_index < loop; file_index++) {
@@ -219,9 +241,23 @@ int main(int argc, char * argv[]){
 		__ssize_t success;
 		while(1){
 			lowest_index = -1;
+
 			for(i = 0; i < words_size; i++) {
 				if(words[i] == NULL || !strlen(words[i])) continue;
-				lowest_index = strcmp(words[i], words[lowest_index == -1 ? i : lowest_index]) > 0 ? lowest_index : i;
+
+				memcpy(aux_a, words[i], strlen(words[i]));
+				memcpy(aux_b, words[lowest_index == -1 ? i : lowest_index], strlen(words[lowest_index == -1 ? i : lowest_index]));
+
+				for(j = 0; j < strlen(aux_a); j++)
+					if((aux_a)[j] == ',')
+						(aux_a)[j] = '\0';
+				for(j = 0; j < strlen(aux_b); j++)
+					if((aux_b)[j] == ',')
+						(aux_b)[j] = '\0';
+
+				lowest_index = strcmp(aux_a, aux_b) >= 0 && lowest_index != -1? lowest_index : i;
+				memset(aux_a, '\0', strlen(aux_a));
+				memset(aux_b, '\0', strlen(aux_b));
 			}
 			if(lowest_index == -1 || !files[lowest_index]){
 				break;
@@ -254,6 +290,8 @@ int main(int argc, char * argv[]){
 	free(words);
 	free(word_comp_suff);
 	free(file_name_aux);
+	free(aux_a);
+	free(aux_b);
 
 	return 0;
 }
