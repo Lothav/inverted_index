@@ -29,25 +29,29 @@ int main(int argc, char * argv[]){
 	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
 	for(i = 0; i < words_size; i++) words[i] = (char *) calloc(1, MAX_WORD_SIZE);
 
-	char dir_name[32], file_name_counter_string[10];
+	char dir_name[32], *file_name_aux = malloc(10);
 
-	char word_comp_suff[33];
+	char *word_comp_suff = malloc(sizeof(33));
 
 	int word_pos = 0, word_amount = 0;
+
+	output = fopen("./tmp/asd", "a+");
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 
 		strcpy(dir_name, argv[3]);
-		sprintf(file_name_counter_string, "%d", files_counter);
-		strcat(dir_name, file_name_counter_string);
+		sprintf(file_name_aux, "%d", files_counter);
+		strcat(dir_name, file_name_aux);
 
 		input = fopen(dir_name, "r");
 
+		memset(word_comp_suff, '\0', (size_t) strlen(word_comp_suff)+1);
 		while(fread(word_comp_suff, 1, (size_t) (MAX_WORD_SIZE), input)){
 
 			for (i = 1; i < MAX_WORD_SIZE; i++)
 				if (word_comp_suff[i] == '\n' || word_comp_suff[i] == ' ') {
-					word_comp_suff[i] = '\0';
+					for (; i < MAX_WORD_SIZE; i++)
+						word_comp_suff[i] = 0;
 					break;
 				}
 			fseek(input, 0, SEEK_SET);
@@ -71,20 +75,43 @@ int main(int argc, char * argv[]){
 				}
 			}
 
+			fwrite(word_comp_suff, 1, sizeof(word_comp_suff), output);
+			fwrite(",", 1, 1, output);
+
+			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
+			sprintf(file_name_aux, "%d", files_counter);
+			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+			fwrite(",", 1, 1, output);
+
+			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
+			sprintf(file_name_aux, "%d", word_amount);
+			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+			fwrite(",", 1, 1, output);
+
+			memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
+			sprintf(file_name_aux, "%d", word_pos);
+			fwrite(file_name_aux, 1, sizeof(file_name_aux), output);
+
+			fwrite("\n", 1, 1, output);
+
 			word_amount = 0;
 			word_pos += strlen(word_comp_suff)+1;
 			fseek(input, word_pos, SEEK_SET);
+			memset(word_comp_suff, '\0', (size_t) strlen(word_comp_suff));
 		}
 
-		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1));
+		word_pos = 0;
+		memset(dir_name, '\0', strlen(dir_name));
+		memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)));
 		fclose(input);
 	}
 
+	fclose(output);
 
 	for (files_counter = 1; files_counter <= (strtol(argv[1], NULL, 10)); files_counter++) {
 		strcpy(dir_name, argv[3]);
-		sprintf(file_name_counter_string, "%d", files_counter);
-		strcat(dir_name, file_name_counter_string);
+		sprintf(file_name_aux, "%d", files_counter);
+		strcat(dir_name, file_name_aux);
 
 		input = fopen(dir_name, "r");
 
@@ -106,8 +133,8 @@ int main(int argc, char * argv[]){
 				ordered_files_count++;
 
 				strcpy(dir_name, "./tmp/a");
-				sprintf(file_name_counter_string, "%d", ordered_files_count);
-				strcat(dir_name, file_name_counter_string);
+				sprintf(file_name_aux, "%d", ordered_files_count);
+				strcat(dir_name, file_name_aux);
 				output = fopen(dir_name, "w+");
 
 				for(i = 0; i < words_size; i++){
@@ -125,8 +152,8 @@ int main(int argc, char * argv[]){
 			ordered_files_count++;
 
 			strcpy(dir_name, "./tmp/a");
-			sprintf(file_name_counter_string, "%d", ordered_files_count);
-			strcat(dir_name, file_name_counter_string);
+			sprintf(file_name_aux, "%d", ordered_files_count);
+			strcat(dir_name, file_name_aux);
 			output = fopen(dir_name, "w+");
 
 			for(i = 0; i < word_count; i++){
@@ -137,7 +164,7 @@ int main(int argc, char * argv[]){
 			fclose(output);
 		}
 
-		memset(file_name_counter_string, '\0', (size_t)(strlen(file_name_counter_string)+1));
+		memset(file_name_aux, '\0', (size_t)(strlen(file_name_aux)+1));
 		fclose(input);
 	}
 	for(i = 0; i < words_size; i++) words[i] = NULL;
@@ -154,8 +181,8 @@ int main(int argc, char * argv[]){
 			strcpy(dir_name, "./tmp/");
 			tmp_file_suffix = file_suffix-1;
 			strncat(dir_name, &tmp_file_suffix, 1);
-			sprintf(file_name_counter_string, "%d", file_index+1);
-			strcat(dir_name, file_name_counter_string);
+			sprintf(file_name_aux, "%d", file_index+1);
+			strcat(dir_name, file_name_aux);
 			files[file_index % words_size] = fopen(dir_name, "r");
 			if(files[file_index % words_size] == NULL){
 				if((file_index % words_size) == 0){
@@ -180,8 +207,8 @@ int main(int argc, char * argv[]){
 		memset(dir_name, '\0', strlen(dir_name));
 		strcpy(dir_name, "./tmp/");
 		strncat(dir_name, &file_suffix, 1);
-		sprintf(file_name_counter_string, "%d", iterations++);
-		strcat(dir_name, file_name_counter_string);
+		sprintf(file_name_aux, "%d", iterations++);
+		strcat(dir_name, file_name_aux);
 
 		output = fopen(dir_name, "w+");
 		__ssize_t success;
@@ -218,9 +245,10 @@ int main(int argc, char * argv[]){
 		}
 	}
 
-
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
+	free(word_comp_suff);
+	free(file_name_aux);
 
 	return 0;
 }
