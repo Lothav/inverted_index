@@ -18,7 +18,7 @@ int main(int argc, char * argv[]){
 	int i;
 	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
 	for(i = 0; i < words_size; i++)
-		words[i] = (char *) calloc(1, MAX_WORD_SIZE);
+		words[i] = (char *) malloc(MAX_WORD_SIZE);
 
 	// Call Main functions.
 	// Their descriptions can be found on theirs respective headers.
