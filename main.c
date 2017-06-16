@@ -1,8 +1,3 @@
-
-#include "suffixed.h"
-#include "filesBlocksOrdered.h"
-#include "balancedInterleaving.h"
-
 /**
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +13,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 
+#include "suffixed.h"
+#include "filesBlocksOrdered.h"
+#include "balancedInterleaving.h"
+
 int main(int argc, char * argv[]){
 	(void)argc; // prevent get errors from non use
 
 	// Get max memory bytes from arguments.
 	long memory_size = strtol(argv[2], NULL, 10);
 	// Calc max words that we'll be able to pull to memory.
-	long words_size  = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));;
+	long words_size  = (memory_size/(MAX_WORD_SIZE));
 
 	/*
 	 * Main code Array.
 	 * Will be used in every file operation respecting memory limit.
 	 * */
 	int i;
-	char **words = (char **) malloc( (size_t) words_size * sizeof(char *) );
+	char **words = (char **) malloc( sizeof(char *) * words_size );
 	for(i = 0; i < words_size; i++)
 		words[i] = (char *) malloc(MAX_WORD_SIZE);
 
