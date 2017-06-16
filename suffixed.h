@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-/*
+/**
  * First function called that will generate the Suffixed file.
  * That function is describe on section 2.1 on doc.
  * */

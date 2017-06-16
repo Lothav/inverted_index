@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-/*
+/**
  * Execute the main algorithm that will interleave
  * the files until get the final file.
  * */

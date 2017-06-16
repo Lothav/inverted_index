@@ -7,7 +7,19 @@
 
 #define MAX_WORD_SIZE 33
 
+/**
+ * Utils File.
+ * Have some util functions that will use by the main functions.
+ * */
+
+/**
+ * Function that will use by qsort() to compare strings.
+ * */
 int words_cmp(const void *a, const void *b);
+
+/**
+ * Write words on file.
+ * */
 void writeOnFile(char ** words, long words_size, int *ordered_files_count, int word_count );
 
 

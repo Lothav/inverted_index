@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-/*
+/**
  * Generate the File with the Blocks that will be used by Balanced Interleaving algorithm.
  * That function is describe on section 2.2 on doc.
  * */
