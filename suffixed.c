@@ -5,7 +5,7 @@ void generateSuffixedFile(char **words, char * argv[], long words_size){
 	// Declare and alloc usefull variables.
 	FILE *input, *output;
 	int word_pos = 0, word_amount = 0, i, word_count = 0, files_counter;
-	char *dir_name 		 = malloc(strlen(argv[3]) + 15),
+	char *dir_name 		 = malloc(strlen(argv[3]) + 25),
 		 *file_name_aux  = malloc(15),
 		 *word_comp_suff = malloc(MAX_WORD_SIZE);
 

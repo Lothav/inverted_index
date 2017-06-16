@@ -22,5 +22,14 @@ int words_cmp(const void *a, const void *b);
  * */
 void writeOnFile(char ** words, long words_size, int *ordered_files_count, int word_count );
 
+/**
+ * Copy File to other directory.
+ * */
+void copyFile(FILE *f1, FILE *f2);
+
+/**
+ * Move generated file to right directory.
+ * */
+void moveFinalFileToFolder(char file_suffix, const char * argv);
 
 #endif //INVERTED_INDEX_UTILS_H

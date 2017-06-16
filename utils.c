@@ -68,3 +68,36 @@ void writeOnFile(char ** words, long words_size, int *ordered_files_count, int w
 	free(file_name_aux);
 }
 
+
+void moveFinalFileToFolder(char file_suffix, const char *argv){
+	FILE *input, *output;
+
+	// Open generated file.
+	char dir_name[25];
+	strcpy(dir_name, "./tmp/");
+	strncat(dir_name, &file_suffix, 1);
+	strcat(dir_name,  "1");
+	input = fopen(dir_name, "r");
+
+	// Open destination file.
+	strcpy(dir_name, argv);
+	strncat(dir_name, "index", 5);
+	output = fopen(dir_name, "w+");
+
+	// Copy file.
+	copyFile(input, output);
+
+	// Close files.
+	fclose(input);
+	fclose(output);
+}
+
+void copyFile(FILE *f1, FILE *f2){
+	char buffer[MAX_WORD_SIZE];
+	size_t n;
+
+	while ((n = fread(buffer, 1, sizeof(buffer), f1)) > 0){
+		fwrite(buffer, 1, n, f2);
+	}
+}
+

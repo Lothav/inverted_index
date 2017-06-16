@@ -39,10 +39,14 @@ int main(int argc, char * argv[]){
 	// Their descriptions can be found on theirs respective headers.
 	generateSuffixedFile(words, argv, words_size);
 	generateFilesBlocksOrdered(words, words_size);
-	balancedInterleaving(words, words_size);
+	char file_suffix = balancedInterleaving(words, words_size);
 
+	// Here we don't need words anymore. Free it
 	for(i = 0; i < words_size; i++) free(words[i]);
 	free(words);
 
-	return 0;
+	// Move final file to right directory.
+	moveFinalFileToFolder(file_suffix, argv[4]);
+
+	return EXIT_SUCCESS;
 }

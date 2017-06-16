@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 
 #include "balancedInterleaving.h"
-void balancedInterleaving(char** words, long words_size){
+char balancedInterleaving(char** words, long words_size){
 
 	// Declare and alloc some util aux variables.
 	FILE *output;
@@ -130,4 +130,6 @@ void balancedInterleaving(char** words, long words_size){
 	free(file_name_aux);
 	free(aux_a);
 	free(aux_b);
+
+	return tmp_file_suffix;
 }
