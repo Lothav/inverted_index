@@ -23,7 +23,7 @@ int main(int argc, char * argv[]){
 	// Get max memory bytes from arguments.
 	long memory_size = strtol(argv[2], NULL, 10);
 	// Calc max words that we'll be able to pull to memory.
-	long words_size  = (memory_size/(MAX_WORD_SIZE));
+	long words_size  = (memory_size/(MAX_WORD_SIZE + sizeof(char *)));
 
 	/*
 	 * Main code Array.

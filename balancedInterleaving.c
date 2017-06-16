@@ -11,7 +11,7 @@ char balancedInterleaving(char** words, long words_size){
 	int file_index = 0, iterations = 1, lowest_index = 0;
 	long loop = words_size;
 	char file_suffix = 'b',
-	 	 tmp_file_suffix,
+	 	 tmp_file_suffix = 'b',
 	 	 *aux_a 		 = malloc(MAX_WORD_SIZE),
 		 *aux_b 		 = malloc(MAX_WORD_SIZE),
 		 *dir_name 		 = malloc(15),

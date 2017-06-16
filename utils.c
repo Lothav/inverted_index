@@ -96,6 +96,7 @@ void copyFile(FILE *f1, FILE *f2){
 	char buffer[MAX_WORD_SIZE];
 	size_t n;
 
+	// Copy line by line.
 	while ((n = fread(buffer, 1, sizeof(buffer), f1)) > 0){
 		fwrite(buffer, 1, n, f2);
 	}
